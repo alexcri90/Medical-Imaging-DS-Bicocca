@@ -27,6 +27,9 @@ from albumentations import (
 )
 from albumentations.pytorch import ToTensorV2
 
+from torchvision import transforms
+
+
 warnings.filterwarnings("ignore")
 
 
@@ -68,7 +71,7 @@ class SIIMDataset(Dataset):
         self.mean = mean
         self.std = std
         self.phase = phase
-        self.transforms = get_transforms(phase, size, mean, std)
+        self.transforms = None  # get_transforms(phase, size, mean, std)
         self.gb = self.df.groupby("ImageId")
         self.fnames = fnames
 
@@ -98,6 +101,7 @@ class SIIMDataset(Dataset):
         augmented = self.transforms(image=image, mask=mask)
         image = augmented["image"]
         mask = augmented["mask"]
+
         # Ensure mask has the correct dimensions
         if mask.ndim == 2:
             mask = np.expand_dims(mask, axis=0)  # Add channel dimension if missing
@@ -125,29 +129,37 @@ class SIIMDataset(Dataset):
 
 def get_transforms(phase, size, mean, std):
     list_transforms = []
-    if phase == "train":
-        list_transforms.extend(
-            [
-                #                 HorizontalFlip(),
-                ShiftScaleRotate(
-                    shift_limit=0,  # no resizing
-                    scale_limit=0.1,
-                    rotate_limit=10,  # rotate
-                    p=0.5,
-                    border_mode=cv2.BORDER_CONSTANT,
-                ),
-                #                 GaussNoise(),
-            ]
-        )
-    list_transforms.extend(
+    # if phase == "train":
+    #     list_transforms.extend(
+    #         [
+    #             #                 HorizontalFlip(),
+    #             ShiftScaleRotate(
+    #                 shift_limit=0,  # no resizing
+    #                 scale_limit=0.1,
+    #                 rotate_limit=10,  # rotate
+    #                 p=0.5,
+    #                 border_mode=cv2.BORDER_CONSTANT,
+    #             ),
+    #             #                 GaussNoise(),
+    #         ]
+    #     )
+    # list_transforms.extend(
+    #     [
+    #         Resize(size, size),
+    #         Normalize(mean=mean, std=std, p=1),
+    #         ToTensorV2(),
+    #     ]
+    # )
+
+    # list_trfms = Compose(list_transforms)
+
+    list_trfms = transforms.Compose(
         [
-            Resize(size, size),
-            Normalize(mean=mean, std=std, p=1),
-            ToTensorV2(),
+            transforms.Resize(size),
+            transforms.Normalize(mean=mean, std=std),
+            transforms.ToTensor(),
         ]
     )
-
-    list_trfms = Compose(list_transforms)
     return list_trfms
 
 
@@ -164,7 +176,7 @@ def provider(
     num_workers=4,
 ):
     df_all = pd.read_csv(df_path)
-    # df_all = df_all[0:1000]
+    df_all = df_all[0:1000]
     df = df_all.drop_duplicates("ImageId")
     df_with_mask = df[df[" EncodedPixels"] != " -1"]
     df_with_mask["has_mask"] = 1
