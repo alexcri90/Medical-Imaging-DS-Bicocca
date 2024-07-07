@@ -177,7 +177,7 @@ def provider(
     num_workers=4,
 ):
     df_all = pd.read_csv(df_path)
-    df_all = df_all[0:1000]
+    # df_all = df_all[0:1000]
     df = df_all.drop_duplicates("ImageId")
     df_with_mask = df[df[" EncodedPixels"] != " -1"]
     df_with_mask["has_mask"] = 1
