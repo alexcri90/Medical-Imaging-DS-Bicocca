@@ -17,15 +17,15 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader, Dataset, sampler
 from matplotlib import pyplot as plt
-from albumentations import (
-    HorizontalFlip,
-    ShiftScaleRotate,
-    Normalize,
-    Resize,
-    Compose,
-    GaussNoise,
-)
-from albumentations.pytorch import ToTensorV2
+# from albumentations import (
+#     HorizontalFlip,
+#     ShiftScaleRotate,
+#     Normalize,
+#     Resize,
+#     Compose,
+#     GaussNoise,
+# )
+#from albumentations.pytorch import ToTensorV2
 
 warnings.filterwarnings("ignore")
 
@@ -68,7 +68,7 @@ class SIIMDataset(Dataset):
         self.mean = mean
         self.std = std
         self.phase = phase
-        self.transforms = get_transforms(phase, size, mean, std)
+        self.transforms = None #get_transforms(phase, size, mean, std) 
         self.gb = self.df.groupby("ImageId")
         self.fnames = fnames
 
@@ -95,9 +95,9 @@ class SIIMDataset(Dataset):
         # )  # Resize mask to match image size
         mask = cv2.resize(mask, (self.size, self.size), interpolation=cv2.INTER_NEAREST)
 
-        augmented = self.transforms(image=image, mask=mask)
-        image = augmented["image"]
-        mask = augmented["mask"]
+        # augmented = self.transforms(image=image, mask=mask)
+        # image = augmented["image"]
+        # mask = augmented["mask"]
         # Ensure mask has the correct dimensions
         if mask.ndim == 2:
             mask = np.expand_dims(mask, axis=0)  # Add channel dimension if missing
@@ -123,32 +123,32 @@ class SIIMDataset(Dataset):
         return len(self.fnames)
 
 
-def get_transforms(phase, size, mean, std):
-    list_transforms = []
-    if phase == "train":
-        list_transforms.extend(
-            [
-                #                 HorizontalFlip(),
-                ShiftScaleRotate(
-                    shift_limit=0,  # no resizing
-                    scale_limit=0.1,
-                    rotate_limit=10,  # rotate
-                    p=0.5,
-                    border_mode=cv2.BORDER_CONSTANT,
-                ),
-                #                 GaussNoise(),
-            ]
-        )
-    list_transforms.extend(
-        [
-            Resize(size, size),
-            Normalize(mean=mean, std=std, p=1),
-            ToTensorV2(),
-        ]
-    )
+# def get_transforms(phase, size, mean, std):
+#     list_transforms = []
+#     if phase == "train":
+#         list_transforms.extend(
+#             [
+#                 #                 HorizontalFlip(),
+#                 ShiftScaleRotate(
+#                     shift_limit=0,  # no resizing
+#                     scale_limit=0.1,
+#                     rotate_limit=10,  # rotate
+#                     p=0.5,
+#                     border_mode=cv2.BORDER_CONSTANT,
+#                 ),
+#                 #                 GaussNoise(),
+#             ]
+#         )
+#     list_transforms.extend(
+#         [
+#             Resize(size, size),
+#             Normalize(mean=mean, std=std, p=1),
+#             ToTensorV2(),
+#         ]
+#     )
 
-    list_trfms = Compose(list_transforms)
-    return list_trfms
+#     list_trfms = Compose(list_transforms)
+#     return list_trfms
 
 
 def provider(
