@@ -2,3 +2,6 @@
 data.npy
 labels.npy
 /saved_models
+/models
+*.pth
+*.pyc
