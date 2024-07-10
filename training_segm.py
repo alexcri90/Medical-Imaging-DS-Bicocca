@@ -79,7 +79,7 @@ class SIIMDataset(Dataset):
     def __getitem__(self, idx):
         image_id = self.fnames[idx]
         df = self.gb.get_group(image_id)
-        annotations = df[" EncodedPixels"].tolist()
+        annotations = df["EncodedPixels"].tolist()
         image_path = os.path.join(self.root, image_id + ".dcm")
         dcm = pydicom.dcmread(image_path)
         image = dcm.pixel_array
@@ -110,7 +110,7 @@ class SIIMDataset(Dataset):
         return image, mask
         # image_id = self.fnames[idx]
         # df = self.gb.get_group(image_id)
-        # annotations = df[" EncodedPixels"].tolist()
+        # annotations = df["EncodedPixels"].tolist()
         # image_path = os.path.join(self.root, image_id + ".dcm")
         # image = cv2.imread(image_path)
         # image = np.array(image)
@@ -180,9 +180,9 @@ def provider(
     df_all = pd.read_csv(df_path)
     # df_all = df_all[0:100]
     df = df_all.drop_duplicates("ImageId")
-    df_with_mask = df[df[" EncodedPixels"] != " -1"]
+    df_with_mask = df[df["EncodedPixels"] != " -1"]
     df_with_mask["has_mask"] = 1
-    df_without_mask = df[df[" EncodedPixels"] == " -1"]
+    df_without_mask = df[df["EncodedPixels"] == " -1"]
     df_without_mask["has_mask"] = 0
     df_without_mask_sampled = df_without_mask.sample(
         len(df_with_mask), random_state=69, replace=True
